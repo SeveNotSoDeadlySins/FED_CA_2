@@ -1,0 +1,108 @@
+import * as React from "react";
+import {
+  IconConfetti,
+  IconTheater,
+  IconDashboard,
+  IconMicrophone2,
+  IconInnerShadowTop,
+  IconMusic,
+} from "@tabler/icons-react";
+
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { useEffect } from "react";
+import { useLocation } from "react-router";
+
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+
+const data = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/",
+      icon: IconDashboard,
+    },
+    {
+      title: "Doctors",
+      url: "/doctors",
+      icon: IconConfetti,
+    },
+    {
+      title: "Patients",
+      url: "#",
+      icon: IconTheater,
+    },
+    {
+      title: "Appointments",
+      url: "#",
+      icon: IconMicrophone2,
+    }
+  ],
+};
+
+export function AppSidebar({ }) {
+  const location = useLocation();
+
+  console.log(location);
+
+  let message = location.state?.message;
+
+  useEffect(() => {
+    if (message) {
+      if (type === "error") {
+        toast.error(message);
+        return;
+      }
+      if (type === "success") {
+        toast.success(message);
+        return;
+      } else {
+        toast(message);
+      }
+    }
+  }, [message]);
+
+  return (
+    <>
+      <Toaster position="top-center" richColors />
+      <Sidebar collapsible="offcanvas" >
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                className="data-[slot=sidebar-menu-button]:!p-1.5"
+              >
+                <a href="#">
+                  <IconInnerShadowTop className="!size-5" />
+                  <span className="text-base font-semibold">Acme Inc.</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent>
+          <NavMain items={data.navMain} />
+        </SidebarContent>
+        <SidebarFooter>
+          <NavUser user={data.user}/>
+        </SidebarFooter>
+      </Sidebar>
+    </>
+  );
+}
