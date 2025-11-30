@@ -1,45 +1,79 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axios from "@/config/api";
 import { useNavigate } from "react-router";
+import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function Create() {
+
+export default function Edit() {
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
     email: "",
     phone: "",
-    specialisation: ""
+    specialisation: "",
   });
-  
-  const navigate = useNavigate();
   const { token } = useAuth();
+
+
+  useEffect(() => {
+    const fetchAppointment = async () => {
+      const options = {
+        method: "GET",
+        url: `/appointments/${id}`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      try {
+        let response = await axios.request(options);
+        console.log(response.data);
+
+        let appointment = response.data;
+
+        setForm({first_name: appointment.first_name,
+                 last_name: appointment.last_name,
+                 email: appointment.email,
+                 phone: appointment.phone,
+                 specialisation: appointment.specialisation
+                });
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchAppointment();
+
+    console.log("Hi");
+  }, []);
+
+  const navigate = useNavigate();
+  const { id } = useParams();
 
   const handleChange = (e) => {
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const createDoctor = async () => {
+  const updateAppointment = async () => {
     const options = {
-      method: "POST",
-      url: `/doctors`,
+      method: "PATCH",
+      url: `/appointments/${id}`,
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
-      data: form
+      data: form,
     };
 
     try {
       let response = await axios.request(options);
       console.log(response.data);
-      navigate("/doctors", { state: {
-        type: "success",
-        message: `Doctor "${response.data.first_name} ${response.data.last_name}" created successfully`} });
+      navigate("/appointments");
     } catch (err) {
       console.log(err);
     }
@@ -48,16 +82,16 @@ export default function Create() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(form);
-    createDoctor();
+    updateAppointment();
   };
 
   return (
     <>
-      Create Doctor
+      Update a Appointment
       <form onSubmit={handleSubmit}>
         <Input
           type="text"
-          placeholder="First name"
+          placeholder="First Name"
           name="first_name"
           value={form.first_name}
           onChange={handleChange}

@@ -44,12 +44,12 @@ const data = {
     },
     {
       title: "Patients",
-      url: "#",
+      url: "/patients",
       icon: IconTheater,
     },
     {
       title: "Appointments",
-      url: "#",
+      url: "/appointments",
       icon: IconMicrophone2,
     }
   ],

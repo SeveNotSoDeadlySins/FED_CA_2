@@ -24,10 +24,10 @@ export default function Create() {
     });
   };
 
-  const createDoctor = async () => {
+  const createAppointment = async () => {
     const options = {
       method: "POST",
-      url: `/doctors`,
+      url: `/appointments`,
       headers: {
         Authorization: `Bearer ${token}`
       },
@@ -37,9 +37,9 @@ export default function Create() {
     try {
       let response = await axios.request(options);
       console.log(response.data);
-      navigate("/doctors", { state: {
+      navigate("/appointments", { state: {
         type: "success",
-        message: `Doctor "${response.data.first_name} ${response.data.last_name}" created successfully`} });
+        message: `Appointment "${response.data.first_name} ${response.data.last_name}" created successfully`} });
     } catch (err) {
       console.log(err);
     }
@@ -48,12 +48,12 @@ export default function Create() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(form);
-    createDoctor();
+    createAppointment();
   };
 
   return (
     <>
-      Create Doctor
+      Create Appointment
       <form onSubmit={handleSubmit}>
         <Input
           type="text"
