@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { Pen } from "lucide-react";
 import DeleteBtn from "@/components/DeleteBtn";
+import { useAuth } from "@/hooks/useAuth";
 
 
 import {
@@ -35,14 +36,15 @@ export default function Index() {
   const [patients, setPatients] = useState([]);
 
   const navigate = useNavigate();
- 
+  const { token } = useAuth();
+
 
   useEffect(() => {
     const fetchPatients = async () => {
       const options = {
         method: "GET",
         url: "/patients",
-        
+
       };
 
       try {
@@ -61,18 +63,22 @@ export default function Index() {
   }, []);
 
   const onDeleteCallback = (id) => {
-    toast.success ("patient deleted successfully");
+    toast.success("patient deleted successfully");
     setPatients(patients.filter(patient => patient.id !== id));
 
   }
 
   return (
     <>
-      <Button asChild variant="outline" className="mb-4 mr-auto block">
-        <Link size="sm" to="/patients/create">
-          Create a new Doctor
-        </Link>
-      </Button>
+      {token && (
+        <Button asChild variant="outline" className="mb-4 mr-auto block">
+          <Link size="sm" to="/patients/create">
+            Create a new Doctor
+          </Link>
+        </Button>
+
+      )}
+
 
       <Table>
         <TableCaption>A list of your recent patients.</TableCaption>
@@ -84,7 +90,7 @@ export default function Index() {
             <TableHead>Phone</TableHead>
             <TableHead>Date of Birth</TableHead>
             <TableHead>Address</TableHead>
-            <TableHead></TableHead>
+            { token && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -96,14 +102,13 @@ export default function Index() {
               <TableCell>{patient.phone}</TableCell>
               <TableCell>{patient.date_of_birth}</TableCell>
               <TableCell>{patient.address}</TableCell>
-              <TableCell>
+              {token && <TableCell>
                 <div className="flex gap-2">
                   <Button className="cursor-pointer hover:bg-blue-500" variant="outline" size="icon" onClick={() => navigate(`/patients/${patient.id}`)}><Eye /></Button>
                   <Button className="cursor-pointer hover:bg-green-500" variant="outline" size="icon" onClick={() => navigate(`/patients/${patient.id}/edit`)}><Pen /></Button>
                   <DeleteBtn onDeleteCallback={onDeleteCallback} resource="patients" id={patient.id} />
-
                 </div>
-              </TableCell>
+              </TableCell>}
             </TableRow>
           ))}
         </TableBody>

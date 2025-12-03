@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { Pen } from "lucide-react";
 import DeleteBtn from "@/components/DeleteBtn";
-
+import { useAuth } from "@/hooks/useAuth";
 
 import {
   Table,
@@ -35,7 +35,8 @@ export default function Index() {
   const [doctors, setDoctors] = useState([]);
 
   const navigate = useNavigate();
- 
+  const { token } = useAuth();
+
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -68,11 +69,12 @@ export default function Index() {
 
   return (
     <>
+     {token && (
       <Button asChild variant="outline" className="mb-4 mr-auto block">
         <Link size="sm" to="/doctors/create">
           Create a new Doctor
         </Link>
-      </Button>
+      </Button>)}
 
       <Table>
         <TableCaption>A list of your recent doctors.</TableCaption>
@@ -83,7 +85,7 @@ export default function Index() {
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>Specialisation</TableHead>
-            <TableHead></TableHead>
+            { token && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -94,14 +96,13 @@ export default function Index() {
               <TableCell>{doctor.email}</TableCell>
               <TableCell>{doctor.phone}</TableCell>
               <TableCell>{doctor.specialisation}</TableCell>
-              <TableCell>
+              { token && <TableCell>
                 <div className="flex gap-2">
                   <Button className="cursor-pointer hover:bg-blue-500" variant="outline" size="icon" onClick={() => navigate(`/doctors/${doctor.id}`)}><Eye /></Button>
                   <Button className="cursor-pointer hover:bg-green-500" variant="outline" size="icon" onClick={() => navigate(`/doctors/${doctor.id}/edit`)}><Pen /></Button>
                   <DeleteBtn onDeleteCallback={onDeleteCallback} resource="doctors" id={doctor.id} />
-
                 </div>
-              </TableCell>
+              </TableCell>}
             </TableRow>
           ))}
         </TableBody>

@@ -26,7 +26,7 @@ export default function Index() {
     const [appointments, setAppointments] = useState([]);
 
     const navigate = useNavigate();
-  const { token } = useAuth();
+    const { token } = useAuth();
 
 
     useEffect(() => {
@@ -64,11 +64,13 @@ export default function Index() {
 
     return (
         <>
+            {token && (
             <Button asChild variant="outline" className="mb-4 mr-auto block">
                 <Link size="sm" to="/appointments/create">
                     Create a new Appointment
                 </Link>
             </Button>
+            )}
 
             <Table>
                 <TableCaption>A list of your recent appointments.</TableCaption>
@@ -77,7 +79,7 @@ export default function Index() {
                         <TableHead>Appoitment Date</TableHead>
                         <TableHead>Doctor id</TableHead>
                         <TableHead>Patient id</TableHead>
-                        <TableHead></TableHead>
+                        { token && <TableHead></TableHead>}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -86,14 +88,13 @@ export default function Index() {
                             <TableCell>{appointment.appointment_date}</TableCell>
                             <TableCell>{appointment.doctor_id}</TableCell>
                             <TableCell>{appointment.patient_id}</TableCell>
-                            <TableCell>
+                            {token && <TableCell>
                                 <div className="flex gap-2">
                                     <Button className="cursor-pointer hover:bg-blue-500" variant="outline" size="icon" onClick={() => navigate(`/appointments/${appointment.id}`)}><Eye /></Button>
                                     <Button className="cursor-pointer hover:bg-green-500" variant="outline" size="icon" onClick={() => navigate(`/appointments/${appointment.id}/edit`)}><Pen /></Button>
                                     <DeleteBtn onDeleteCallback={onDeleteCallback} resource="appointments" id={appointment.id} />
-
                                 </div>
-                            </TableCell>
+                            </TableCell>}
                         </TableRow>
                     ))}
                 </TableBody>

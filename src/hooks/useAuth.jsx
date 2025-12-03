@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       let response = await axios.request(options);
-      console.log(response.data);
+      console.log(response.data);0..toExponential
       localStorage.setItem("token", response.data.token);
       setToken(response.data.token);
     } catch (err) {
