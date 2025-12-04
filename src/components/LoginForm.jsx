@@ -51,7 +51,7 @@ export default function LoginForm() {
   });
 
   const submitForm = async (data) => {
-    e.preventDefault();
+    console.log(data);
 
     let response = await onLogin(data.email, data.password);
 

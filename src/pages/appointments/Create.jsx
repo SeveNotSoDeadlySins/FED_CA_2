@@ -7,11 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Create() {
   const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    specialisation: ""
+    appointment_date: "",
+    doctor_id: "",
+    patient_id: ""
   });
   
   const navigate = useNavigate();
@@ -31,7 +29,11 @@ export default function Create() {
       headers: {
         Authorization: `Bearer ${token}`
       },
-      data: form
+      data: {
+        appointment_date: form.appointment_date,
+        doctor_id: parseInt(form.doctor_id),
+        patient_id: parseInt(form.patient_id)
+      }
     };
 
     try {
@@ -39,7 +41,7 @@ export default function Create() {
       console.log(response.data);
       navigate("/appointments", { state: {
         type: "success",
-        message: `Appointment "${response.data.first_name} ${response.data.last_name}" created successfully`} });
+        message: `Appointment "${response.data.appointment_date}" created successfully`} });
     } catch (err) {
       console.log(err);
     }
@@ -57,44 +59,26 @@ export default function Create() {
       <form onSubmit={handleSubmit}>
         <Input
           type="text"
-          placeholder="First name"
-          name="first_name"
-          value={form.first_name}
+          placeholder="Date of Appointment"
+          name="appointment_date"
+          value={form.appointment_date}
           onChange={handleChange}
         />
         <Input
           className="mt-3"
-          type="text"
-          placeholder="Last name"
-          name="last_name"
-          value={form.last_name}
-          onChange={handleChange}
-        />
-
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Email"
-          name="email"
-          value={form.email}
+          type="number"
+          placeholder="Doctor Number"
+          name="doctor_id"
+          value={form.doctor_id}
           onChange={handleChange}
         />
 
         <Input
           className="mt-3"
-          type="text"
-          placeholder="Phone"
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
-        />
-
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Specialisation"
-          name="specialisation"
-          value={form.specialisation}
+          type="number"
+          placeholder="Patient Number"
+          name="patient_id"
+          value={form.patient_id}
           onChange={handleChange}
         />
         <Button className="mt-4 cursor-pointer" variant="outline" type="submit">

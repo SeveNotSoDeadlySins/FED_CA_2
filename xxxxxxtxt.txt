@@ -1,9 +1,1 @@
- <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                onChange={handleForm}
-              />
+Can add search and filter and make sure that i have everything set up for all of the different types

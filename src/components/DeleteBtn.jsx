@@ -11,7 +11,7 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
 
   const onDelete = async () => {
     const options = {
-      method: "GET",
+      method: "DELETE",
       url: `/${resource}/${id}`,
       headers: {
         Authorization: `Bearer ${token}`,
