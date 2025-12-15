@@ -38,6 +38,27 @@ export default function Index() {
   const navigate = useNavigate();
   const { token } = useAuth();
 
+  const formatDateDMY = (value) => {
+    if (!value) return "";
+    // create a Date object from the input
+    // if the value is a number we assume it's a unix timestamp (seconds),
+    // so multiply by 1000 to convert to milliseconds    let date;
+    if (typeof value === "number") {
+      date = new Date(value * 1000);
+    } else {
+      // otherwise try to parse the value as an ISO/date string
+      date = new Date(value);
+    }
+    // if parsing failed (invalid date), return the original value as a fallback
+    if (isNaN(date)) return String(value);
+    // extract day, month, year and pad day/month to 2 digits
+    const dd = String(date.getDate()).padStart(2, "0");
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const yyyy = date.getFullYear();
+    // return formatted string in dd/mm/yyyy format
+    return `${dd}/${mm}/${yyyy}`;
+  };
+
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -90,7 +111,7 @@ export default function Index() {
             <TableHead>Phone</TableHead>
             <TableHead>Date of Birth</TableHead>
             <TableHead>Address</TableHead>
-            { token && <TableHead></TableHead>}
+            {token && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -100,7 +121,7 @@ export default function Index() {
               <TableCell>{patient.last_name}</TableCell>
               <TableCell>{patient.email}</TableCell>
               <TableCell>{patient.phone}</TableCell>
-              <TableCell>{patient.date_of_birth}</TableCell>
+              <TableCell>{formatDateDMY(patient.date_of_birth)}</TableCell>
               <TableCell>{patient.address}</TableCell>
               {token && <TableCell>
                 <div className="flex gap-2">
