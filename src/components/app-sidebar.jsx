@@ -60,7 +60,9 @@ export function AppSidebar({ }) {
 
   console.log(location);
 
-  let message = location.state?.message;
+  let message = location.state?.message ?? "No message";
+  let type = location.state?.type ?? "info";
+
 
   useEffect(() => {
     if (message) {
