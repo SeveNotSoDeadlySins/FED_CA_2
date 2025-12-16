@@ -1,59 +1,34 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axios from "@/config/api";
 import { useNavigate } from "react-router";
-import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { useForm, Controller } from "react-hook-form";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
+export default function Create() {
+  const formSchema = z.object({
+    department: z.enum([
+      "Podiatrist",
+      "Dermatologist",
+      "Pediatrician",
+      "Psychiatrist",
+      "General Practitioner",
+    ]),
+  });
 
-export default function Edit() {
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
     email: "",
     phone: "",
-    date_of_birth: "",
-    address: ""
+    specialisation: "",
   });
-  const { token } = useAuth();
-
-
-  useEffect(() => {
-    const fetchPatient = async () => {
-      const options = {
-        method: "GET",
-        url: `/patient/${id}`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
-      try {
-        let response = await axios.request(options);
-        console.log(response.data);
-
-        let patient = response.data;
-
-        setForm({first_name: patient.first_name,
-                 last_name: patient.last_name,
-                 email: patient.email,
-                 phone: patient.phone,
-                 date_of_birth: patient.date_of_birth,
-                 address: patient.address
-                });
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    fetchPatient();
-
-    console.log("Hi");
-  }, []);
 
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { token } = useAuth();
 
   const handleChange = (e) => {
     setForm({
@@ -62,10 +37,10 @@ export default function Edit() {
     });
   };
 
-  const updatePatient = async () => {
+  const createDoctor = async () => {
     const options = {
-      method: "PATCH",
-      url: `/patients/${id}`,
+      method: "POST",
+      url: `/doctors`,
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -75,7 +50,12 @@ export default function Edit() {
     try {
       let response = await axios.request(options);
       console.log(response.data);
-      navigate("/patients");
+      navigate("/doctors", {
+        state: {
+          type: "success",
+          message: `Doctor "${response.data.first_name} ${response.data.last_name}" created successfully`,
+        },
+      });
     } catch (err) {
       console.log(err);
     }
@@ -84,16 +64,16 @@ export default function Edit() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(form);
-    updatePatient();
+    createDoctor();
   };
 
   return (
     <>
-      Update a Patient
+      Create Doctor
       <form onSubmit={handleSubmit}>
         <Input
           type="text"
-          placeholder="First Name"
+          placeholder="First name"
           name="first_name"
           value={form.first_name}
           onChange={handleChange}
@@ -125,23 +105,19 @@ export default function Edit() {
           onChange={handleChange}
         />
 
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Your date of birth"
-          name="date_of_birth"
-          value={form.date_of_birth}
+        <select
+          className="mt-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          name="specialisation"
+          value={form.specialisation}
           onChange={handleChange}
-        />
-
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Specialisation"
-          name="address"
-          value={form.address}
-          onChange={handleChange}
-        />
+        >
+          <option value="">Select Specialisation</option>
+          <option value="Podiatrist">Podiatrist</option>
+          <option value="Dermatologist">Dermatologist</option>
+          <option value="Pediatrician">Pediatrician</option>
+          <option value="Psychiatrist">Psychiatrist</option>
+          <option value="General Practitioner">General Practitioner</option>
+        </select>
         <Button className="mt-4 cursor-pointer" variant="outline" type="submit">
           Submit
         </Button>

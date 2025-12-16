@@ -21,15 +21,6 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 
-// import {
-//   Card,
-//   CardAction,
-//   CardContent,
-//   CardDescription,
-//   CardFooter,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
 
 export default function Index() {
   const [doctors, setDoctors] = useState([]);
@@ -56,6 +47,7 @@ export default function Index() {
     };
 
     fetchDoctors();
+    
 
     console.log("Hi");
 

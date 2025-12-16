@@ -1,1 +1,14 @@
 Can add search and filter and make sure that i have everything set up for all of the different types
+
+
+
+
+
+
+Doctor Delete works
+
+Patient Delete works as well
+
+Appointment delete works as well
+
+Gotta make perscription work

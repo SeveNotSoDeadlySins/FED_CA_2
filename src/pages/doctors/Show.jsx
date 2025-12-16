@@ -144,7 +144,7 @@ export default function Show() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
+      });0
 
       console.log("Doctor deleted");
 
@@ -157,10 +157,7 @@ export default function Show() {
     }
   };
 
-  const unixToLocalDateString = (unixTimestamp) => {
-    const date = new Date(unixTimestamp * 1000); // Convert seconds to milliseconds
-    return date.toLocaleDateString(); // Format the date to a readable string
-  }
+
 
   if (!doctor) {
     return <div>Loading...</div>;
@@ -204,7 +201,7 @@ export default function Show() {
               <li key={appointment.id}>
                 {/* convert unix timestamp to local date string */}
 
-                <span className="font-bold">Date: </span>{unixToLocalDateString(appointment.appointment_date)} - <span className="font-bold">Patient: </span>{appointment.patient_id} <span className="text-gray-400">// should get the patient name here</span>
+                <span className="font-bold">Date: </span>{appointment.appointment_date} - <span className="font-bold">Patient: </span>{appointment.patient_id} <span className="text-gray-400">// should get the patient name here</span>
               </li>
             ))}
           </ul>

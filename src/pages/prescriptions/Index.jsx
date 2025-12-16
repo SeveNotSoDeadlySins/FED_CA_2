@@ -1,4 +1,4 @@
-// this is where all patient
+// this is where all prescription
 import { useEffect, useState } from "react";
 import axios from "@/config/api";
 import { Link, useNavigate } from "react-router";
@@ -9,7 +9,6 @@ import { Eye } from "lucide-react";
 import { Pen } from "lucide-react";
 import DeleteBtn from "@/components/DeleteBtn";
 import { useAuth } from "@/hooks/useAuth";
-
 
 import {
   Table,
@@ -22,18 +21,9 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 
-// import {
-//   Card,
-//   CardAction,
-//   CardContent,
-//   CardDescription,
-//   CardFooter,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
 
 export default function Index() {
-  const [patients, setPatients] = useState([]);
+  const [prescriptions, setPrescription] = useState([]);
 
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -62,31 +52,35 @@ export default function Index() {
 
 
   useEffect(() => {
-    const fetchPatients = async () => {
+    const fetchPrescriptions = async () => {
       const options = {
         method: "GET",
-        url: "/patients",
+        url: "/prescriptions",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
 
       };
 
       try {
         let response = await axios.request(options);
         console.log(response.data);
-        setPatients(response.data);
+        setPrescription(response.data);
       } catch (err) {
         console.log(err);
       }
     };
 
-    fetchPatients();
+    fetchPrescriptions();
+
 
     console.log("Hi");
 
   }, []);
 
   const onDeleteCallback = (id) => {
-    toast.success("patient deleted successfully");
-    setPatients(patients.filter(patient => patient.id !== id));
+    toast.success("prescription deleted successfully");
+    setDoctors(prescriptions.filter(prescription => prescription.id !== id));
 
   }
 
@@ -94,41 +88,40 @@ export default function Index() {
     <>
       {token && (
         <Button asChild variant="outline" className="mb-4 mr-auto block">
-          <Link size="sm" to="/patients/create">
-            Create a new Doctor
+          <Link size="sm" to="/prescriptions/create">
+            Create a new Prescription
           </Link>
-        </Button>
-
-      )}
-
+        </Button>)}
 
       <Table>
-        <TableCaption>A list of your recent patients.</TableCaption>
+        <TableCaption>A list of your recent prescriptions.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>First name</TableHead>
-            <TableHead>Last name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Date of Birth</TableHead>
-            <TableHead>Address</TableHead>
+            <TableHead>Patient name</TableHead>
+            <TableHead>doctor name</TableHead>
+            <TableHead>Diagnosis</TableHead>
+            <TableHead>Medication</TableHead>
+            <TableHead>Dosage</TableHead>
+            <TableHead>Start date</TableHead>
+            <TableHead>End date</TableHead>
             {token && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {patients.map((patient) => (
-            <TableRow key={patient.id}>
-              <TableCell>{patient.first_name}</TableCell>
-              <TableCell>{patient.last_name}</TableCell>
-              <TableCell>{patient.email}</TableCell>
-              <TableCell>{patient.phone}</TableCell>
-              <TableCell>{formatDateDMY(patient.date_of_birth)}</TableCell>
-              <TableCell>{patient.address}</TableCell>
+          {prescriptions.map((prescription) => (
+            <TableRow key={prescription.id}>
+              <TableCell>{prescription.patient_id}</TableCell>
+              <TableCell>{prescription.doctor_id}</TableCell>
+              <TableCell>{prescription.diagnosis_id}</TableCell>
+              <TableCell>{prescription.medication}</TableCell>
+              <TableCell>{prescription.dosage}</TableCell>
+              <TableCell>{formatDateDMY(prescription.start_date)}</TableCell>
+              <TableCell>{formatDateDMY(prescription.end_date)}</TableCell>
               {token && <TableCell>
                 <div className="flex gap-2">
-                  <Button className="cursor-pointer hover:bg-blue-500" variant="outline" size="icon" onClick={() => navigate(`/patients/${patient.id}`)}><Eye /></Button>
-                  <Button className="cursor-pointer hover:bg-green-500" variant="outline" size="icon" onClick={() => navigate(`/patients/${patient.id}/edit`)}><Pen /></Button>
-                  <DeleteBtn onDeleteCallback={onDeleteCallback} resource="patients" id={patient.id} />
+                  <Button className="cursor-pointer hover:bg-blue-500" variant="outline" size="icon" onClick={() => navigate(`/prescriptions/${prescription.id}`)}><Eye /></Button>
+                  <Button className="cursor-pointer hover:bg-green-500" variant="outline" size="icon" onClick={() => navigate(`/prescriptions/${prescription.id}/edit`)}><Pen /></Button>
+                  <DeleteBtn onDeleteCallback={onDeleteCallback} resource="prescriptions" id={prescription.id} />
                 </div>
               </TableCell>}
             </TableRow>

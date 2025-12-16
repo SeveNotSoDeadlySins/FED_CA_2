@@ -54,7 +54,6 @@ export default function LoginForm() {
 
     let response = await onLogin(data.email, data.password);
 
-
     response && toast.error(response.msg)
 
     console.log(response);

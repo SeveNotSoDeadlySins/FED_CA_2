@@ -51,6 +51,16 @@ const data = {
       title: "Appointments",
       url: "/appointments",
       icon: IconMicrophone2,
+    },
+    {
+      title: "Prescriptions",
+      url: "/prescriptions",
+      icon: IconMicrophone2,
+    },
+    {
+      title: "Diagnoses",
+      url: "/diagnoses",
+      icon: IconMicrophone2,
     }
   ],
 };
