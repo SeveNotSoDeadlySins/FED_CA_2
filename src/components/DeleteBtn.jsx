@@ -54,8 +54,8 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
       }
 
       if (resource === "patients") {
-        const appointmentsRes = await axios.get("/appointments", { headers });
-        const patientAppointments = appointmentsRes.data.filter(
+        const appointmentsResquest = await axios.get("/appointments", { headers });
+        const patientAppointments = appointmentsResquest.data.filter(
           (i) => String(i.patient_id) === String(id)
         );
 
@@ -65,8 +65,8 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
           )
         );
 
-        const prescriptionsRes = await axios.get("/prescriptions", { headers });
-        const patientPrescriptions = prescriptionsRes.data.filter(
+        const prescriptionsResquest = await axios.get("/prescriptions", { headers });
+        const patientPrescriptions = prescriptionsResquest.data.filter(
           (i) => String(i.patient_id) === String(id)
         );
 
@@ -76,8 +76,8 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
           )
         );
 
-        const diagnosesRes = await axios.get("/diagnoses", { headers });
-        const patientDiagnoses = diagnosesRes.data.filter(
+        const diagnosesResquest = await axios.get("/diagnoses", { headers });
+        const patientDiagnoses = diagnosesResquest.data.filter(
           (i) => String(i.patient_id) === String(id)
         );
 
@@ -91,8 +91,8 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
       }
 
       if (resource === "appointments") {
-        const prescriptionsRes = await axios.get("/prescriptions", { headers });
-        const appointmentPrescriptions = prescriptionsRes.data.filter(
+        const prescriptionsResquest = await axios.get("/prescriptions", { headers });
+        const appointmentPrescriptions = prescriptionsResquest.data.filter(
           (i) => String(i.appointment_id) === String(id)
         );
 

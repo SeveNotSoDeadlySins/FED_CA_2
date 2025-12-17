@@ -9,6 +9,7 @@ import { Eye } from "lucide-react";
 import { Pen } from "lucide-react";
 import DeleteBtn from "@/components/DeleteBtn";
 import { useAuth } from "@/hooks/useAuth";
+import { formatDateDMY } from "@/components/DateFormat";
 
 import {
     Table,
@@ -39,8 +40,6 @@ export default function Index() {
                 headers: {
                     Authorization: `Bearer ${token}`
                 },
-
-
             };
 
             try {
@@ -56,20 +55,20 @@ export default function Index() {
         const fetchDoctorsAndPatients = async () => {
             try {
                 // Promise all sends 2 requests to the api at the same time which is faster then doing it 1 by one
-                const [doctorRes, patientRes] = await Promise.all([
+                const [doctorResquest, patientResquest] = await Promise.all([
                     axios.request({ method: "GET", url: "/doctors", headers: { Authorization: `Bearer ${token}` } }),
                     axios.request({ method: "GET", url: "/patients", headers: { Authorization: `Bearer ${token}` } }),
                 ]);
 
 
                 const doctorsData = {};
-                doctorRes.data.forEach(doctor => {
+                doctorResquest.data.forEach(doctor => {
                     doctorsData[doctor.id] = doctor;
                 });
                 setDoctors(doctorsData);
 
                 const patientsData = {};
-                patientRes.data.forEach(patient => {
+                patientResquest.data.forEach(patient => {
                     patientsData[patient.id] = patient;
                 });
                 setPatients(patientsData);
@@ -85,28 +84,6 @@ export default function Index() {
         console.log("Hi");
 
     }, []);
-
-    const formatDateDMY = (value) => {
-        if (!value) return "";
-        // create a Date object from the input
-        // if the value is a number we assume it's a unix timestamp (seconds),
-        // so multiply by 1000 to convert to milliseconds
-        let date;
-        if (typeof value === "number") {
-            date = new Date(value * 1000);
-        } else {
-            // otherwise try to parse the value as an ISO/date string
-            date = new Date(value);
-        }
-        // if parsing failed (invalid date), return the original value as a fallback
-        if (isNaN(date)) return String(value);
-        // extract day, month, year and pad day/month to 2 digits
-        const dd = String(date.getDate()).padStart(2, "0");
-        const mm = String(date.getMonth() + 1).padStart(2, "0");
-        const yyyy = date.getFullYear();
-        // return formatted string in dd/mm/yyyy format
-        return `${dd}/${mm}/${yyyy}`;
-    };
 
     const onDeleteCallback = (id) => {
         toast.success("Appointment deleted successfully");

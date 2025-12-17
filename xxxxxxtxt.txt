@@ -11,4 +11,55 @@ Patient Delete works as well
 
 Appointment delete works as well
 
-Gotta make perscription work
+perscription delete works
+
+Diagnose delete works 
+
+ALL DELETEING WORKS 100%
+
+
+
+
+
+
+
+
+
+Gotta make perscription work done
+
+
+
+Make sure to test all create/edit/deletes and single view before video
+
+
+Create Diagnose Work
+
+need to test perscription with real ids
+
+
+Diagnose create done
+Appointment create done
+doctor has to be done
+patient 
+perscription
+
+
+///////////////////////
+
+CAN ADD MORE TO ALL SHOWS
+
+//////////////////////
+
+Can add a filter or 2
+
+
+/////////////////////
+
+Should style the page a lot
+
+////////////////////
+Make sure to get the id's to change to names on all pages as ids arent as helpful and names are prefered. (for me)
+
+
+/////////////////// 
+Double check the brief for anthing extra

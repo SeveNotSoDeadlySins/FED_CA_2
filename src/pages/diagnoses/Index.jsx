@@ -9,6 +9,8 @@ import { Eye } from "lucide-react";
 import { Pen } from "lucide-react";
 import DeleteBtn from "@/components/DeleteBtn";
 import { useAuth } from "@/hooks/useAuth";
+import { formatDateDMY } from "@/components/DateFormat";
+
 
 import {
   Table,
@@ -33,6 +35,7 @@ import { toast } from "sonner";
 
 export default function Index() {
   const [diagnoses, setDiagnoses] = useState([]);
+  const [patients, setPatients] = useState({}); 
 
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -43,7 +46,9 @@ export default function Index() {
       const options = {
         method: "GET",
         url: "/diagnoses",
-        
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       };
 
       try {
@@ -55,57 +60,81 @@ export default function Index() {
       }
     };
 
+    const fetchPatients = async () => {
+      try {
+        const response = await axios.get("/patients", { headers: { Authorization: `Bearer ${token}` } });
+        const patientsData = {};
+        response.data.forEach(patient => {
+          patientsData[patient.id] = patient;
+        });
+        setPatients(patientsData);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     fetchDiagnoses();
-    
+    fetchPatients();
 
     console.log("Hi");
 
   }, []);
 
+
+
+
   const onDeleteCallback = (id) => {
-    toast.success ("diagnose deleted successfully");
+    toast.success("diagnose deleted successfully");
     setDiagnoses(diagnoses.filter(diagnose => diagnose.id !== id));
 
   }
 
   return (
     <>
-     {token && (
-      <Button asChild variant="outline" className="mb-4 mr-auto block">
-        <Link size="sm" to="/diagnoses/create">
-          Create a new Diagnose
-        </Link>
-      </Button>)}
+      {token && (
+        <Button asChild variant="outline" className="mb-4 mr-auto block">
+          <Link size="sm" to="/diagnoses/create">
+            Create a new Diagnose
+          </Link>
+        </Button>)}
 
       <Table>
         <TableCaption>A list of your recent diagnoses.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>First name</TableHead>
-            <TableHead>Last name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Specialisation</TableHead>
-            { token && <TableHead></TableHead>}
+            <TableHead>Patient Name</TableHead>
+            <TableHead>Condition</TableHead>
+            <TableHead>Diagnosis date</TableHead>
+            {token && <TableHead></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {diagnoses.map((diagnose) => (
-            <TableRow key={diagnose.id}>
-              <TableCell>{diagnose.first_name}</TableCell>
-              <TableCell>{diagnose.last_name}</TableCell>
-              <TableCell>{diagnose.email}</TableCell>
-              <TableCell>{diagnose.phone}</TableCell>
-              <TableCell>{diagnose.specialisation}</TableCell>
-              { token && <TableCell>
-                <div className="flex gap-2">
-                  <Button className="cursor-pointer hover:bg-blue-500" variant="outline" size="icon" onClick={() => navigate(`/diagnoses/${diagnose.id}`)}><Eye /></Button>
-                  <Button className="cursor-pointer hover:bg-green-500" variant="outline" size="icon" onClick={() => navigate(`/diagnoses/${diagnose.id}/edit`)}><Pen /></Button>
-                  <DeleteBtn onDeleteCallback={onDeleteCallback} resource="diagnoses" id={diagnose.id} />
-                </div>
-              </TableCell>}
-            </TableRow>
-          ))}
+          {diagnoses.map(diagnose => {
+            const patient = patients[diagnose.patient_id];
+
+            return (
+              <TableRow key={diagnose.id}>
+                <TableCell>
+                  {patient ? `${patient.first_name} ${patient.last_name}` : diagnose.patient_id}
+                </TableCell>
+                <TableCell>{diagnose.condition}</TableCell>
+                <TableCell>{formatDateDMY(diagnose.diagnosis_date)}</TableCell>
+                {token && (
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="icon" onClick={() => navigate(`/diagnoses/${diagnose.id}`)}>
+                        <Eye />
+                      </Button>
+                      <Button variant="outline" size="icon" onClick={() => navigate(`/diagnoses/${diagnose.id}/edit`)}>
+                        <Pen />
+                      </Button>
+                      <DeleteBtn resource="diagnoses" id={diagnose.id} onDeleteCallback={onDeleteCallback} />
+                    </div>
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </>

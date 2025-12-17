@@ -3,9 +3,10 @@ import {
   IconConfetti,
   IconTheater,
   IconDashboard,
-  IconMicrophone2,
+  IconCalendarClock,
   IconInnerShadowTop,
-  IconMusic,
+  IconNotes,
+  IconPillFilled
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -50,17 +51,17 @@ const data = {
     {
       title: "Appointments",
       url: "/appointments",
-      icon: IconMicrophone2,
+      icon: IconCalendarClock,
     },
     {
       title: "Prescriptions",
       url: "/prescriptions",
-      icon: IconMicrophone2,
+      icon: IconNotes,
     },
     {
       title: "Diagnoses",
       url: "/diagnoses",
-      icon: IconMicrophone2,
+      icon: IconPillFilled,
     }
   ],
 };

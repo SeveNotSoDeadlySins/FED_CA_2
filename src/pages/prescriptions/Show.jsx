@@ -46,14 +46,17 @@ export default function Show() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>{prescription.patient_id} {prescription.doctor_id}</CardTitle>
+        <CardTitle>{prescription.diagnosis_id} {prescription.doctor_id}</CardTitle>
         <CardDescription>
-          {prescription.email}
+          {prescription.dosage}
           <br />
-          {prescription.phone}
+          {prescription.end_date}
                     <br />
 
-          {prescription.specialisation}
+          {prescription.medication}
+          {prescription.patient_id}
+          {prescription.start_date}
+
 
 
         </CardDescription>

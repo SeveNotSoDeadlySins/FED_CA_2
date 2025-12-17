@@ -24,9 +24,15 @@ import AppointmentsCreate from '@/pages/appointments/Create';
 import AppointmentsEdit from '@/pages/appointments/Edit';
 
 import PerscriptionsIndex from '@/pages/prescriptions/Index';
+import PrescriptionsCreate from '@/pages/prescriptions/Create';
+import PrescriptionsShow from '@/pages/prescriptions/Show';
+import PrescriptionsEdit from '@/pages/prescriptions/Edit';
 
 
 import DiagnosesIndex from '@/pages/diagnoses/Index';
+import DiagnosesCreate from '@/pages/diagnoses/Create';
+import DiagnosesShow from '@/pages/diagnoses/Show';
+import DiagnosesEdit from '@/pages/diagnoses/Edit';
 
 
 export default function App() {
@@ -89,11 +95,14 @@ export default function App() {
 
 
                     <Route path="/prescriptions" element={<PerscriptionsIndex />} />
-
-
-
+                    <Route path="/prescriptions/create" element={<PrescriptionsCreate />} />
+                    <Route path="/prescriptions/:id" element={<PrescriptionsShow />} />
+                    <Route path="/prescriptions/:id/edit" element={<PrescriptionsEdit />} />
 
                     <Route path="/diagnoses" element={<DiagnosesIndex />} />
+                    <Route path="/diagnoses/create" element={<DiagnosesCreate />} />
+                    <Route path="/diagnoses/:id" element={<DiagnosesShow />} />
+                    <Route path="/diagnoses/:id/edit" element={<DiagnosesEdit />} />
 
                   </Routes>
                 </div>
