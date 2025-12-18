@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import axios from "@/config/api";
 import { useAuth } from "@/hooks/useAuth";
-import FormCard from "@/components/formcard";
+import FormCard from "@/components/FormCard";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 

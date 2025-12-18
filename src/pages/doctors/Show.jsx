@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "@/config/api";
 import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
-import ShowCard from "@/components/showcard";
+import ShowCard from "@/components/ShowCard";
 import {
   IconStethoscope,
   IconCalendarClock,

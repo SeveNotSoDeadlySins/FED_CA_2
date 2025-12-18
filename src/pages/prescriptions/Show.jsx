@@ -3,7 +3,7 @@ import axios from "@/config/api";
 import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDateDMY } from "@/components/DateFormat";
-import ShowCard from "@/components/showcard";
+import ShowCard from "@/components/ShowCard";
 
 import {
   IconNotes
