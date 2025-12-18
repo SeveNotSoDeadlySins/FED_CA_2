@@ -74,6 +74,10 @@ export default function EditPatient() {
   // Submit handler
   const submitForm = async (data) => {
     try {
+        // Convert DD/MM/YYYY -> YYYY-MM-DD
+        const [dd, mm, yyyy] = data.date_of_birth.split("/");
+        const isoDate = `${yyyy}-${mm}-${dd}`;
+
       const response = await axios.patch(
         `/patients/${id}`,
         {
@@ -81,7 +85,7 @@ export default function EditPatient() {
           last_name: data.last_name,
           email: data.email,
           phone: data.phone,
-          date_of_birth: data.date_of_birth,
+          date_of_birth: isoDate,
           address: data.address,
         },
         { headers: { Authorization: `Bearer ${token}` } }

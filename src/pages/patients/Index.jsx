@@ -8,7 +8,6 @@ import DeleteBtn from "@/components/DeleteBtn";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDateDMY } from "@/components/DateFormat";
 
-
 import {
   Table,
   TableBody,
@@ -21,11 +20,12 @@ import {
 import { toast } from "sonner";
 
 export default function Index() {
-  const [patients, setPatients] = useState([]);
+  const [patients, setPatients] = useState([]); // State to store patients list
 
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token } = useAuth(); // Check if user is logged in
 
+  // Fetch patients from API when component mounts
   useEffect(() => {
     const fetchPatients = async () => {
       const options = {
@@ -35,8 +35,8 @@ export default function Index() {
 
       try {
         let response = await axios.request(options);
-        console.log(response.data);
-        setPatients(response.data);
+        console.log(response.data); // Log response for debugging
+        setPatients(response.data); // Save patients in state
       } catch (err) {
         console.log(err);
       }
@@ -48,6 +48,7 @@ export default function Index() {
 
   }, []);
 
+  // Callback function for deleting a patient
   const onDeleteCallback = (id) => {
     toast.success("patient deleted successfully");
     setPatients(patients.filter(patient => patient.id !== id));
@@ -56,6 +57,8 @@ export default function Index() {
 
   return (
     <>
+      {/* Button to create a new patient, only visible if user is logged in */}
+
       {token && (
         <Button asChild variant="outline" className="mb-4 mr-auto block">
           <Link size="sm" to="/patients/create">
@@ -65,7 +68,7 @@ export default function Index() {
 
       )}
 
-
+      {/* Table displaying patients */}
       <Table>
         <TableCaption>A list of your recent patients.</TableCaption>
         <TableHeader>

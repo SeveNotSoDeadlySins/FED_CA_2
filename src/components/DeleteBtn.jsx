@@ -6,8 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 
 
 export default function DeleteBtn({ resource, id, onDeleteCallback }) {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { token } = useAuth();
+  const [isDeleting, setIsDeleting] = useState(false); // Track if the user clicked delete
+  const { token } = useAuth(); // Get authorization token
 
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -15,7 +15,7 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
 
 
   const deleteDoctor = async () => {
-    // Get all appointments
+    // Get all appointments for this doctor
     const appointmentRequest = await axios.get("/appointments", { headers });
     const doctorAppointments = appointmentRequest.data.filter(
       (i) => String(i.doctor_id) === String(id)
@@ -30,7 +30,7 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
       );
     }
 
-    // Get all pescriptions
+    // Get all prescriptions for this doctor
     const prescriptionsResquest = await axios.get("/prescriptions", { headers });
     const doctorPrescriptions = prescriptionsResquest.data.filter(
       (i) => String(i.doctor_id) === String(id)
@@ -54,6 +54,7 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
       }
 
       if (resource === "patients") {
+         // Delete related appointments, prescriptions, diagnoses first
         const appointmentsResquest = await axios.get("/appointments", { headers });
         const patientAppointments = appointmentsResquest.data.filter(
           (i) => String(i.patient_id) === String(id)
@@ -91,6 +92,7 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
       }
 
       if (resource === "appointments") {
+        // Delete related prescriptions first
         const prescriptionsResquest = await axios.get("/prescriptions", { headers });
         const appointmentPrescriptions = prescriptionsResquest.data.filter(
           (i) => String(i.appointment_id) === String(id)
@@ -105,11 +107,12 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
         await axios.delete(`/appointments/${id}`, { headers });
       }
 
+      // Call callback to update parent component state
       if (onDeleteCallback) onDeleteCallback(id);
     } catch (err) {
       console.error("Delete failed", err);
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false); // Reset delete confirmation
     }
   };
 
@@ -132,7 +135,7 @@ export default function DeleteBtn({ resource, id, onDeleteCallback }) {
         className="text-red-500 border-red-500 hover:border-red-500 hover:bg-red-500"
       > Yes</Button>
       <Button
-        onClick={() => setIsDeleting(false)}
+        onClick={() => setIsDeleting(false)} 
         variant="outline"
         size="sm"
         className="text-slate-500 border-slate-500 hover:border-slate-500 hover:bg-slate-500"

@@ -4,16 +4,6 @@ import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 import ShowCard from "@/components/showcard";
 
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-
 import {
   IconStethoscope,
   IconTheater,
@@ -24,39 +14,46 @@ import {
 import { formatDateDMY } from "@/components/DateFormat";
 
 export default function Show() {
+  // State to store patient and all the other data
   const [patient, setPatient] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
   const [diagnoses, setDiagnoses] = useState([]);
 
-  const { id } = useParams();
-  const { token } = useAuth();
+  const { id } = useParams(); // Get patient ID from URL
+  const { token } = useAuth(); // Get auth token
 
+  // Fetch all patient-related data when component mounts
   useEffect(() => {
     const fetchPatientData = async () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       try {
+        // Fetch patient info
         const patientResquest = await axios.get(`/patients/${id}`, { headers });
         setPatient(patientResquest.data);
 
+        // Fetch all appointments and filter for this patient
         const appointmentsResquest = await axios.get(`/appointments`, { headers });
         const patientAppointments = appointmentsResquest.data.filter(
           (i) => String(i.patient_id) === String(id)
         );
         setAppointments(patientAppointments);
 
+        // Get unique doctor IDs from patient's appointments
         const doctorIds = patientAppointments.map((i) => i.doctor_id);
         const doctorsResquest = await axios.get(`/doctors`, { headers });
         const patientDoctors = doctorsResquest.data.filter((d) => doctorIds.includes(d.id));
         setDoctors(patientDoctors);
 
+        // Fetch prescriptions for this patient
         const prescriptionsResquest = await axios.get(`/prescriptions`, { headers });
         setPrescriptions(
           prescriptionsResquest.data.filter((p) => String(p.patient_id) === String(id))
         );
 
+        // Fetch diagnoses for this patient
         const diagnosesResquest = await axios.get(`/diagnoses`, { headers });
         setDiagnoses(
           diagnosesResquest.data.filter((d) => String(d.patient_id) === String(id))
@@ -69,6 +66,7 @@ export default function Show() {
     fetchPatientData();
   }, [id, token]);
 
+  // Show loading message if patient data hasn't loaded yet
   if (!patient) return <p>Loading...</p>;
 
   return (
