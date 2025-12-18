@@ -1,119 +1,132 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router";
 import axios from "@/config/api";
-import { useNavigate } from "react-router";
-import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import FormCard from "@/components/formcard";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, Controller } from "react-hook-form";
+import { formatDateDMY } from "@/components/DateFormat";
 
-export default function Edit() {
-  const [form, setForm] = useState({
-    condition: "",
-    diagnosis_date: "",
-    patient_id: "",
+// Define Zod schema for validation
+const diagnosisSchema = z.object({
+  condition: z.string().min(1, "Condition is required"),
+  diagnosis_date: z
+    .string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in DD/MM/YYYY format"),
+  patient_id: z.string().regex(/^\d+$/, "Patient ID must be a number"),
+});
 
-  });
+export default function EditDiagnosis() {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const { token } = useAuth();
 
+  const form = useForm({
+    resolver: zodResolver(diagnosisSchema),
+    defaultValues: {
+      condition: "",
+      diagnosis_date: "",
+      patient_id: "",
+    },
+    mode: "onChange",
+  });
 
+  // Fetch existing diagnosis data
   useEffect(() => {
     const fetchDiagnose = async () => {
-      const options = {
-        method: "GET",
-        url: `/diagnoses/${id}`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
       try {
-        let response = await axios.request(options);
-        console.log(response.data);
+        const response = await axios.get(`/diagnoses/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-        let diagnose = response.data;
+        const data = response.data;
 
-        setForm({condition: diagnose.condition,
-                 diagnosis_date: diagnose.diagnosis_date,
-                 patient_id: diagnose.patient_id
-                });
+        // Reset form with fetched data
+        form.reset({
+          condition: data.condition,
+          diagnosis_date: formatDateDMY(data.diagnosis_date),
+          patient_id: String(data.patient_id),
+        });
       } catch (err) {
-        console.log(err);
+        console.error(err);
+        toast.error("Failed to load diagnosis");
       }
     };
 
     fetchDiagnose();
+  }, [id, token]);
 
-    console.log("Hi");
-  }, []);
-
-  const navigate = useNavigate();
-  const { id } = useParams();
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const updateDiagnose = async () => {
-    const options = {
-      method: "PATCH",
-      url: `/diagnoses/${id}`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      data: form,
-    };
-
+  // Submit handler
+  const submitForm = async (data) => {
     try {
-      let response = await axios.request(options);
-      console.log(response.data);
+      const response = await axios.patch(
+        `/diagnoses/${id}`,
+        {
+          condition: data.condition,
+          diagnosis_date: data.diagnosis_date,
+          patient_id: parseInt(data.patient_id),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success("Diagnosis updated successfully");
       navigate("/diagnoses");
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      toast.error("Failed to update diagnosis");
     }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(form);
-    updateDiagnose();
   };
 
   return (
     <>
-      Update a Diagnose
-      <form onSubmit={handleSubmit}>
-        <Input
-          type="text"
-          placeholder="Condition"
+      <Toaster />
+      <FormCard
+        title="Edit Diagnosis"
+        onSubmit={form.handleSubmit(submitForm)}
+        submitText="Save Diagnosis"
+      >
+        <Controller
           name="condition"
-          value={form.condition}
-          onChange={handleChange}
-        />
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="diagnosis date"
-          name="diagnosis_date"
-          value={form.diagnosis_date}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Condition</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
 
-        <Input
-          className="mt-3"
-          type="number"
-          placeholder="patient_id"
-          name="patient_id"
-          value={form.patient_id}
-          onChange={handleChange}
+        <Controller
+          name="diagnosis_date"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Diagnosis Date</FieldLabel>
+              <Input {...field} placeholder="DD/MM/YYYY" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
-        <Button className="mt-4 cursor-pointer" variant="outline" type="submit">
-          Submit
-        </Button>
-      </form>
+
+        <Controller
+          name="patient_id"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Patient ID</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+      </FormCard>
     </>
   );
 }

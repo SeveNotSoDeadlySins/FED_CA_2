@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "@/config/api";
 import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import ShowCard from "@/components/showcard";
+
 
 import {
   Card,
@@ -11,6 +13,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+
+import {
+  IconStethoscope,
+  IconTheater,
+  IconCalendarClock,
+  IconNotes,
+  IconPillFilled,
+} from "@tabler/icons-react";
+import { formatDateDMY } from "@/components/DateFormat";
 
 export default function Show() {
   const [patient, setPatient] = useState(null);
@@ -61,113 +72,108 @@ export default function Show() {
   if (!patient) return <p>Loading...</p>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="max-w-6xl mx-auto py-10 space-y-10 px-4">
+
       {/* Patient Info */}
-      <Card className="bg-white shadow-lg rounded-xl border border-gray-200 w-full max-w-3xl mx-auto">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-2xl font-bold">
-            {patient.first_name} {patient.last_name}
-          </CardTitle>
-          <CardDescription className="text-gray-600">
-            Email: {patient.email} <br />
-            Phone: {patient.phone} <br />
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500">
-            Patient ID: {patient.id}
-          </p>
-        </CardContent>
-      </Card>
+      <ShowCard
+        icon={IconTheater}
+        iconBg="bg-green-100"
+        iconColor="text-green-600"
+        title={`${patient.first_name} ${patient.last_name}`}
+        hover={false}
+      >
+        <p><span className="font-semibold">Email:</span> {patient.email}</p>
+        <p><span className="font-semibold">Phone:</span> {patient.phone}</p>
+        <p className="text-sm text-gray-500">Patient ID: {patient.id}</p>
+      </ShowCard>
 
-      <Separator />
-
-      {/* Doctors Section */}
+      {/* Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="bg-white shadow-md rounded-lg border border-gray-200">
-          <CardHeader>
-            <CardTitle>Doctors</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {doctors.length > 0 ? (
-              <ul className="list-disc list-inside space-y-1">
-                {doctors.map((d) => (
-                  <li key={d.id} className="font-medium text-gray-700">
-                    {d.first_name} {d.last_name}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500">No doctors found</p>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Appointments Section */}
-        <Card className="bg-white shadow-md rounded-lg border border-gray-200">
-          <CardHeader>
-            <CardTitle>Appointments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {appointments.length > 0 ? (
-              <ul className="space-y-2">
-                {appointments.map((a) => {
-                  const doctor = doctors.find((d) => d.id === a.doctor_id);
-                  return (
-                    <li key={a.id} className="text-gray-700">
-                      <span className="font-semibold">{a.appointment_date}</span> with{" "}
-                      <span className="text-blue-600">
-                        {doctor ? `${doctor.first_name} ${doctor.last_name}` : "Unknown Doctor"}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="text-gray-500">No appointments found</p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Doctors */}
+        <ShowCard
+          icon={IconStethoscope}
+          iconBg="bg-orange-100"
+          iconColor="text-orange-600"
+          title="Doctors"
+        >
+          {doctors.length ? (
+            doctors.map((d) => (
+              <p key={d.id}>
+                {d.first_name} {d.last_name}
+              </p>
+            ))
+          ) : (
+            <p className="text-gray-500">No doctors found</p>
+          )}
+        </ShowCard>
 
-        {/* Prescriptions Section */}
-        <Card className="bg-white shadow-md rounded-lg border border-gray-200">
-          <CardHeader>
-            <CardTitle>Prescriptions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {prescriptions.length > 0 ? (
-              <ul className="space-y-1">
-                {prescriptions.map((p) => (
-                  <li key={p.id} className="text-gray-700">
-                    <span className="font-semibold">{p.condition}</span> - Prescribed {p.medication}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500">No prescriptions found</p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Appointments */}
+        <ShowCard
+          icon={IconCalendarClock}
+          iconBg="bg-blue-100"
+          iconColor="text-blue-600"
+          title="Appointments"
+        >
+          {appointments.length ? (
+            appointments.map((a) => {
+              const doctor = doctors.find((d) => d.id === a.doctor_id);
+              return (
+                <p key={a.id}>
+                  <span className="font-semibold">
+                    {formatDateDMY(a.appointment_date)}
+                  </span>{" "}
+                  with{" "}
+                  {doctor
+                    ? `${doctor.first_name} ${doctor.last_name}`
+                    : "Unknown Doctor"}
+                </p>
+              );
+            })
+          ) : (
+            <p className="text-gray-500">No appointments found</p>
+          )}
+        </ShowCard>
 
-        {/* Diagnoses Section */}
-        <Card className="bg-white shadow-md rounded-lg border border-gray-200">
-          <CardHeader>
-            <CardTitle>Diagnoses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {diagnoses.length > 0 ? (
-              <ul className="space-y-1">
-                {diagnoses.map((d) => (
-                  <li key={d.id} className="text-gray-700">
-                    <span className="font-semibold">{d.condition}</span> - {d.diagnosis_date}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500">No diagnoses found</p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Prescriptions */}
+        <ShowCard
+          icon={IconNotes}
+          iconBg="bg-yellow-100"
+          iconColor="text-yellow-600"
+          title="Prescriptions"
+        >
+          {prescriptions.length ? (
+            prescriptions.map((p) => (
+              <p key={p.id}>
+                <span className="font-semibold">{p.medication}</span> — {p.dosage}
+              </p>
+            ))
+          ) : (
+            <p className="text-gray-500">No prescriptions found</p>
+          )}
+        </ShowCard>
+
+        {/* Diagnoses */}
+        <ShowCard
+          icon={IconPillFilled}
+          iconBg="bg-purple-100"
+          iconColor="text-purple-600"
+          title="Diagnoses"
+        >
+          {diagnoses.length ? (
+            diagnoses.map((d) => (
+              <p key={d.id}>
+                <span className="font-semibold">
+                  {formatDateDMY(d.diagnosis_date)}
+                </span>{" "}
+                — {d.condition}
+              </p>
+            ))
+          ) : (
+            <p className="text-gray-500">No diagnoses found</p>
+          )}
+        </ShowCard>
+
       </div>
     </div>
   );

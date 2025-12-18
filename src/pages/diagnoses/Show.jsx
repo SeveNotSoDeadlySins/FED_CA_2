@@ -3,16 +3,9 @@ import axios from "@/config/api";
 import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDateDMY } from "@/components/DateFormat";
+import ShowCard from "@/components/showcard";
+import { IconPillFilled } from "@tabler/icons-react";
 
-import {
-    Card,
-    CardAction,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
 
 export default function Show() {
     const [diagnose, setDiagnose] = useState([]);
@@ -34,7 +27,7 @@ export default function Show() {
                 setDiagnose(diagnoseData);
 
                 // then get the patient so i can display their name
-                const patientRes = await axios.get(`/patients/${diagnoseData.patient_id}`,{ headers });
+                const patientRes = await axios.get(`/patients/${diagnoseData.patient_id}`, { headers });
                 setPatient(patientRes.data);
 
             } catch (err) {
@@ -50,19 +43,32 @@ export default function Show() {
 
     }, [id, token]);
 
+    if (!diagnose || !patient) {
+        return <p className="text-center py-20 text-gray-500">Loading...</p>;
+    }
 
 
-return (
-    <Card className="w-full max-w-md">
-        <CardHeader>
-            <CardTitle>{diagnose.condition}</CardTitle>
-            <CardDescription>
-                {formatDateDMY(diagnose.diagnosis_date)}
-                <br />
+    return (
+        <div className="flex justify-center">
+            <ShowCard
+                icon={IconPillFilled}
+                iconBg="bg-purple-100"
+                iconColor="text-purple-600"
+                title="Diagnosis Details"
+            >
+                <p className="text-lg font-semibold">
+                    {diagnose.condition}
+                </p>
 
-                {patient.first_name} {patient.last_name}
-            </CardDescription>
-        </CardHeader>
-    </Card>
-);
+                <p>
+                    <span className="font-semibold">Diagnosed on:</span>{" "}
+                    {formatDateDMY(diagnose.diagnosis_date)}
+                </p>
+
+                <p className="text-sm text-gray-500 mt-2">
+                    Patient: {patient.first_name} {patient.last_name}
+                </p>
+            </ShowCard>
+        </div>
+    );
 }

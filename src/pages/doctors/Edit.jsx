@@ -1,140 +1,161 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router";
 import axios from "@/config/api";
-import { useNavigate } from "react-router";
-import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import FormCard from "@/components/formcard";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, Controller } from "react-hook-form";
 
-export default function Edit() {
-  const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    specialisation: "",
-  });
+// Define Zod schema for validation
+const doctorSchema = z.object({
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(1, "Phone is required"),
+  specialisation: z.string().min(1, "Specialisation is required"),
+});
+
+export default function EditDoctor() {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const { token } = useAuth();
 
+  const form = useForm({
+    resolver: zodResolver(doctorSchema),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      specialisation: "",
+    },
+    mode: "onChange",
+  });
 
+  // Fetch existing doctor data
   useEffect(() => {
     const fetchDoctor = async () => {
-      const options = {
-        method: "GET",
-        url: `/doctors/${id}`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
       try {
-        let response = await axios.request(options);
-        console.log(response.data);
+        const response = await axios.get(`/doctors/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-        let doctor = response.data;
+        const data = response.data;
 
-        setForm({first_name: doctor.first_name,
-                 last_name: doctor.last_name,
-                 email: doctor.email,
-                 phone: doctor.phone,
-                 specialisation: doctor.specialisation
-                });
+        // Reset form with fetched data
+        form.reset({
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          phone: data.phone,
+          specialisation: data.specialisation,
+        });
       } catch (err) {
-        console.log(err);
+        console.error(err);
+        toast.error("Failed to load doctor");
       }
     };
 
     fetchDoctor();
+  }, [id, token]);
 
-    console.log("Hi");
-  }, []);
-
-  const navigate = useNavigate();
-  const { id } = useParams();
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const updateDoctor = async () => {
-    const options = {
-      method: "PATCH",
-      url: `/doctors/${id}`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      data: form,
-    };
-
+  // Submit handler
+  const submitForm = async (data) => {
     try {
-      let response = await axios.request(options);
-      console.log(response.data);
+      const response = await axios.patch(
+        `/doctors/${id}`,
+        {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          phone: data.phone,
+          specialisation: data.specialisation,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success("Doctor updated successfully");
       navigate("/doctors");
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      toast.error("Failed to update doctor");
     }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(form);
-    updateDoctor();
   };
 
   return (
     <>
-      Update a Doctor
-      <form onSubmit={handleSubmit}>
-        <Input
-          type="text"
-          placeholder="First Name"
+      <Toaster />
+      <FormCard
+        title="Edit Doctor"
+        onSubmit={form.handleSubmit(submitForm)}
+        submitText="Save Doctor"
+      >
+        <Controller
           name="first_name"
-          value={form.first_name}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>First Name</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Last name"
+
+        <Controller
           name="last_name"
-          value={form.last_name}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Last Name</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
 
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Email"
+        <Controller
           name="email"
-          value={form.email}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Email</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
 
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Phone"
+        <Controller
           name="phone"
-          value={form.phone}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Phone</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
 
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Specialisation"
+        <Controller
           name="specialisation"
-          value={form.specialisation}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Specialisation</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
-        <Button className="mt-4 cursor-pointer" variant="outline" type="submit">
-          Submit
-        </Button>
-      </form>
+      </FormCard>
     </>
   );
 }

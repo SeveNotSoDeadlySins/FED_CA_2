@@ -1,140 +1,132 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router";
 import axios from "@/config/api";
-import { useNavigate } from "react-router";
-import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import FormCard from "@/components/formcard";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
-export default function Edit() {
-  const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    specialisation: "",
-  });
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, Controller } from "react-hook-form";
+import { formatDateDMY } from "@/components/DateFormat";
+
+export default function EditAppointment() {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const { token } = useAuth();
 
+  // Zod schema
+  const formSchema = z.object({
+    appointment_date: z
+      .string()
+      .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in DD/MM/YYYY format"),
+    doctor_id: z.string().regex(/^\d+$/, "Doctor ID must be a number"),
+    patient_id: z.string().regex(/^\d+$/, "Patient ID must be a number"),
+  });
 
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      appointment_date: "",
+      doctor_id: "",
+      patient_id: "",
+    },
+    mode: "onChange",
+  });
+
+  // Fetch appointment data
   useEffect(() => {
     const fetchAppointment = async () => {
-      const options = {
-        method: "GET",
-        url: `/appointments/${id}`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
       try {
-        let response = await axios.request(options);
-        console.log(response.data);
+        const response = await axios.get(`/appointments/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-        let appointment = response.data;
-
-        setForm({first_name: appointment.first_name,
-                 last_name: appointment.last_name,
-                 email: appointment.email,
-                 phone: appointment.phone,
-                 specialisation: appointment.specialisation
-                });
+        form.reset({
+          appointment_date: formatDateDMY(response.data.appointment_date),
+          doctor_id: String(response.data.doctor_id),
+          patient_id: String(response.data.patient_id),
+        });
       } catch (err) {
-        console.log(err);
+        console.error(err);
+        toast.error("Failed to load appointment");
       }
     };
 
     fetchAppointment();
+  }, [id, token]);
 
-    console.log("Hi");
-  }, []);
-
-  const navigate = useNavigate();
-  const { id } = useParams();
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const updateAppointment = async () => {
-    const options = {
-      method: "PATCH",
-      url: `/appointments/${id}`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      data: form,
-    };
-
+  // Submit handler
+  const submitForm = async (data) => {
     try {
-      let response = await axios.request(options);
-      console.log(response.data);
+      const response = await axios.patch(
+        `/appointments/${id}`,
+        {
+          appointment_date: data.appointment_date,
+          doctor_id: parseInt(data.doctor_id),
+          patient_id: parseInt(data.patient_id),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success(
+        `Appointment "${response.data.appointment_date}" updated successfully`
+      );
       navigate("/appointments");
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      toast.error("Failed to update appointment");
     }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(form);
-    updateAppointment();
   };
 
   return (
     <>
-      Update a Appointment
-      <form onSubmit={handleSubmit}>
-        <Input
-          type="text"
-          placeholder="First Name"
-          name="first_name"
-          value={form.first_name}
-          onChange={handleChange}
-        />
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Last name"
-          name="last_name"
-          value={form.last_name}
-          onChange={handleChange}
-        />
-
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Email"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
+      <Toaster />
+      <FormCard
+        title="Edit Appointment"
+        onSubmit={form.handleSubmit(submitForm)}
+        submitText="Save Appointment"
+      >
+        <Controller
+          name="appointment_date"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Appointment Date</FieldLabel>
+              <Input {...field} placeholder="DD/MM/YYYY" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
 
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Phone"
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
+        <Controller
+          name="doctor_id"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Doctor ID</FieldLabel>
+              <Input {...field} placeholder="Doctor Number" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
 
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Specialisation"
-          name="specialisation"
-          value={form.specialisation}
-          onChange={handleChange}
+        <Controller
+          name="patient_id"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Patient ID</FieldLabel>
+              <Input {...field} placeholder="Patient Number" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
-        <Button className="mt-4 cursor-pointer" variant="outline" type="submit">
-          Submit
-        </Button>
-      </form>
+      </FormCard>
     </>
   );
 }

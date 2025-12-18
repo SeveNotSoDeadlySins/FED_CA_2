@@ -63,3 +63,14 @@ Make sure to get the id's to change to names on all pages as ids arent as helpfu
 
 /////////////////// 
 Double check the brief for anthing extra
+
+
+
+ADD TO appointment view
+add to perscription view
+add a bit more to diagnoses view
+then stlye everything 
+
+
+
+FINISH STYLING

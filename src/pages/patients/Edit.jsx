@@ -1,151 +1,180 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router";
 import axios from "@/config/api";
-import { useNavigate } from "react-router";
-import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import FormCard from "@/components/formcard";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, Controller } from "react-hook-form";
+import { formatDateDMY } from "@/components/DateFormat";
 
-export default function Edit() {
-  const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    date_of_birth: "",
-    address: ""
-  });
+// Define Zod schema for validation
+const patientSchema = z.object({
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(1, "Phone is required"),
+  date_of_birth: z
+    .string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Date must be in DD/MM/YYYY format"),
+  address: z.string().min(1, "Address is required"),
+});
+
+export default function EditPatient() {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const { token } = useAuth();
 
+  const form = useForm({
+    resolver: zodResolver(patientSchema),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      date_of_birth: "",
+      address: "",
+    },
+    mode: "onChange",
+  });
 
+  // Fetch existing patient data
   useEffect(() => {
     const fetchPatient = async () => {
-      const options = {
-        method: "GET",
-        url: `/patient/${id}`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
       try {
-        let response = await axios.request(options);
-        console.log(response.data);
+        const response = await axios.get(`/patients/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-        let patient = response.data;
+        const data = response.data;
 
-        setForm({first_name: patient.first_name,
-                 last_name: patient.last_name,
-                 email: patient.email,
-                 phone: patient.phone,
-                 date_of_birth: patient.date_of_birth,
-                 address: patient.address
-                });
+        // Reset form with fetched data
+        form.reset({
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          phone: data.phone,
+          date_of_birth: formatDateDMY(data.date_of_birth),
+          address: data.address,
+        });
       } catch (err) {
-        console.log(err);
+        console.error(err);
+        toast.error("Failed to load patient");
       }
     };
 
     fetchPatient();
+  }, [id, token]);
 
-    console.log("Hi");
-  }, []);
-
-  const navigate = useNavigate();
-  const { id } = useParams();
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const updatePatient = async () => {
-    const options = {
-      method: "PATCH",
-      url: `/patients/${id}`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      data: form,
-    };
-
+  // Submit handler
+  const submitForm = async (data) => {
     try {
-      let response = await axios.request(options);
-      console.log(response.data);
+      const response = await axios.patch(
+        `/patients/${id}`,
+        {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          phone: data.phone,
+          date_of_birth: data.date_of_birth,
+          address: data.address,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success("Patient updated successfully");
       navigate("/patients");
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      toast.error("Failed to update patient");
     }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(form);
-    updatePatient();
   };
 
   return (
     <>
-      Update a Patient
-      <form onSubmit={handleSubmit}>
-        <Input
-          type="text"
-          placeholder="First Name"
+      <Toaster />
+      <FormCard
+        title="Edit Patient"
+        onSubmit={form.handleSubmit(submitForm)}
+        submitText="Save Patient"
+      >
+        <Controller
           name="first_name"
-          value={form.first_name}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>First Name</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Last name"
+
+        <Controller
           name="last_name"
-          value={form.last_name}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Last Name</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
 
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Email"
+        <Controller
           name="email"
-          value={form.email}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Email</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
 
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Phone"
+        <Controller
           name="phone"
-          value={form.phone}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Phone</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
 
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Your date of birth"
+        <Controller
           name="date_of_birth"
-          value={form.date_of_birth}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Date of Birth</FieldLabel>
+              <Input {...field} placeholder="DD/MM/YYYY" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
 
-        <Input
-          className="mt-3"
-          type="text"
-          placeholder="Specialisation"
+        <Controller
           name="address"
-          value={form.address}
-          onChange={handleChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Address</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
-        <Button className="mt-4 cursor-pointer" variant="outline" type="submit">
-          Submit
-        </Button>
-      </form>
+      </FormCard>
     </>
   );
 }

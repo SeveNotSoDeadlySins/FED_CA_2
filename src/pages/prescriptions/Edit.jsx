@@ -1,156 +1,198 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router";
 import axios from "@/config/api";
-import { useNavigate } from "react-router";
-import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import FormCard from "@/components/formcard";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import { formatDateDMY } from "@/components/DateFormat";
 
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, Controller } from "react-hook-form";
 
-export default function Edit() {
-    const [form, setForm] = useState({
-        patient_id: "",
-        doctor_id: "",
-        diagnosis_id: "",
-        medication: "",
-        dosage: "",
-        start_date: "",
-        end_date: ""
+// Define Zod schema for validation
+const prescriptionSchema = z.object({
+  patient_id: z.string().regex(/^\d+$/, "Patient ID must be a number"),
+  doctor_id: z.string().regex(/^\d+$/, "Doctor ID must be a number"),
+  diagnosis_id: z.string().regex(/^\d+$/, "Diagnosis ID must be a number"),
+  medication: z.string().min(1, "Medication is required"),
+  dosage: z.string().min(1, "Dosage is required"),
+  start_date: z
+    .string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Start Date must be in DD/MM/YYYY format"),
+  end_date: z
+    .string()
+    .regex(/^\d{2}\/\d{2}\/\d{4}$/, "End Date must be in DD/MM/YYYY format"),
+});
 
+export default function EditPrescription() {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { token } = useAuth();
 
-    });
-    const { token } = useAuth();
+  const form = useForm({
+    resolver: zodResolver(prescriptionSchema),
+    defaultValues: {
+      patient_id: "",
+      doctor_id: "",
+      diagnosis_id: "",
+      medication: "",
+      dosage: "",
+      start_date: "",
+      end_date: "",
+    },
+    mode: "onChange",
+  });
 
-
-    useEffect(() => {
-        const fetchPrescriptions = async () => {
-            const options = {
-                method: "GET",
-                url: `/prescriptions/${id}`,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            };
-
-            try {
-                let response = await axios.request(options);
-                console.log(response.data);
-
-                let prescription = response.data;
-
-                setForm({
-                    patient_id: prescription.patient_id,
-                    doctor_id: prescription.doctor_id,
-                    diagnosis_id: prescription.diagnosis_id,
-                    medication: prescription.medication,
-                    dosage: prescription.dosage,
-                    start_date: prescription.start_date,
-                    end_date: prescription.end_date
-                });
-            } catch (err) {
-                console.log(err);
-            }
-        };
-
-        fetchPrescriptions();
-
-        console.log("Hi");
-    }, []);
-
-    const navigate = useNavigate();
-    const { id } = useParams();
-
-    const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value,
+  // Fetch existing prescription data
+  useEffect(() => {
+    const fetchPrescription = async () => {
+      try {
+        const response = await axios.get(`/prescriptions/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
+
+        const data = response.data;
+
+        // Reset form with fetched data
+        form.reset({
+          patient_id: String(data.patient_id),
+          doctor_id: String(data.doctor_id),
+          diagnosis_id: String(data.diagnosis_id),
+          medication: data.medication,
+          dosage: data.dosage,
+          start_date: formatDateDMY(data.start_date),
+          end_date: formatDateDMY(data.end_date),
+        });
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load prescription");
+      }
     };
 
-    const updatePrescriptions = async () => {
-        const options = {
-            method: "PATCH",
-            url: `/prescriptions/${id}`,
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            data: form,
-        };
+    fetchPrescription();
+  }, [id, token]);
 
-        try {
-            let response = await axios.request(options);
-            console.log(response.data);
-            navigate("/prescriptions");
-        } catch (err) {
-            console.log(err);
-        }
-    };
+  // Submit handler
+  const submitForm = async (data) => {
+    try {
+      const response = await axios.patch(
+        `/prescriptions/${id}`,
+        {
+          patient_id: parseInt(data.patient_id),
+          doctor_id: parseInt(data.doctor_id),
+          diagnosis_id: parseInt(data.diagnosis_id),
+          medication: data.medication,
+          dosage: data.dosage,
+          start_date: data.start_date,
+          end_date: data.end_date,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log(form);
-        updatePrescriptions();
-    };
+      toast.success("Prescription updated successfully");
+      navigate("/prescriptions");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update prescription");
+    }
+  };
 
-    return (
-        <>
-            Update a Prescriptions
-            <form onSubmit={handleSubmit}>
-                <Input
-                    type="text"
-                    placeholder="diagnosis_id"
-                    name="diagnosis_id"
-                    value={form.diagnosis_id}
-                    onChange={handleChange}
-                />
-                <Input
-                    className="mt-3"
-                    type="text"
-                    placeholder="medication"
-                    name="medication"
-                    value={form.medication}
-                    onChange={handleChange}
-                />
+  return (
+    <>
+      <Toaster />
+      <FormCard
+        title="Edit Prescription"
+        onSubmit={form.handleSubmit(submitForm)}
+        submitText="Save Prescription"
+      >
+        <Controller
+          name="patient_id"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Patient ID</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
 
-                <Input
-                    className="mt-3"
-                    type="number"
-                    placeholder="patient_id"
-                    name="patient_id"
-                    value={form.patient_id}
-                    onChange={handleChange}
-                />
+        <Controller
+          name="doctor_id"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Doctor ID</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
 
-                <Input
-                    className="mt-3"
-                    type="number"
-                    placeholder="dosage"
-                    name="dosage"
-                    value={form.dosage}
-                    onChange={handleChange}
-                />
+        <Controller
+          name="diagnosis_id"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Diagnosis ID</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
 
-                <Input
-                    className="mt-3"
-                    type="number"
-                    placeholder="start_date"
-                    name="start_date"
-                    value={form.start_date}
-                    onChange={handleChange}
-                />
+        <Controller
+          name="medication"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Medication</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
 
-                <Input
-                    className="mt-3"
-                    type="number"
-                    placeholder="end_date"
-                    name="end_date"
-                    value={form.end_date}
-                    onChange={handleChange}
-                />
-                <Button className="mt-4 cursor-pointer" variant="outline" type="submit">
-                    Submit
-                </Button>
-            </form>
-        </>
-    );
+        <Controller
+          name="dosage"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Dosage</FieldLabel>
+              <Input {...field} />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="start_date"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>Start Date</FieldLabel>
+              <Input {...field} placeholder="DD/MM/YYYY" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+
+        <Controller
+          name="end_date"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel>End Date</FieldLabel>
+              <Input {...field} placeholder="DD/MM/YYYY" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+      </FormCard>
+    </>
+  );
 }

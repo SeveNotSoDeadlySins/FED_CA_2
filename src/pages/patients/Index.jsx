@@ -1,9 +1,6 @@
-// this is where all patient
 import { useEffect, useState } from "react";
 import axios from "@/config/api";
 import { Link, useNavigate } from "react-router";
-
-
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { Pen } from "lucide-react";
@@ -22,16 +19,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-
-// import {
-//   Card,
-//   CardAction,
-//   CardContent,
-//   CardDescription,
-//   CardFooter,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
 
 export default function Index() {
   const [patients, setPatients] = useState([]);
@@ -72,7 +59,7 @@ export default function Index() {
       {token && (
         <Button asChild variant="outline" className="mb-4 mr-auto block">
           <Link size="sm" to="/patients/create">
-            Create a new Doctor
+            Create a new Patient
           </Link>
         </Button>
 

@@ -1,6 +1,6 @@
 import * as React from "react";
 import {
-  IconConfetti,
+  IconStethoscope,
   IconTheater,
   IconDashboard,
   IconCalendarClock,
@@ -20,6 +20,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+
 import { useEffect } from "react";
 import { useLocation } from "react-router";
 
@@ -41,7 +42,7 @@ const data = {
     {
       title: "Doctors",
       url: "/doctors",
-      icon: IconConfetti,
+      icon: IconStethoscope,
     },
     {
       title: "Patients",

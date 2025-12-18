@@ -2,16 +2,10 @@ import { useEffect, useState } from "react";
 import axios from "@/config/api";
 import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import ShowCard from "@/components/showcard";
+import { IconCalendarClock  } from "@tabler/icons-react";
+import { formatDateDMY } from "@/components/DateFormat";
 
-import {
-    Card,
-    CardAction,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
 
 export default function Show() {
     const [appointment, setAppointment] = useState([]);
@@ -44,16 +38,28 @@ export default function Show() {
     }, []);
 
     return (
-        <Card className="w-full max-w-md">
-            <CardHeader>
-                <CardTitle>{appointment.appointment_date}</CardTitle>
-                <CardDescription>
-                    {appointment.doctor_id}
-                    <br />
+        <div className="flex justify-center">
+            <ShowCard
+                icon={IconCalendarClock}
+                iconBg="bg-blue-100"
+                iconColor="text-blue-600"
+                title="Appointment Details"
+            >
+                <p className="text-lg font-semibold">
+                    {formatDateDMY(appointment.appointment_date)}
+                </p>
 
+                <p>
+                    <span className="font-semibold">Doctor ID:</span>{" "}
+                    {appointment.doctor_id}
+                </p>
+
+                <p>
+                    <span className="font-semibold">Patient ID:</span>{" "}
                     {appointment.patient_id}
-                </CardDescription>
-            </CardHeader>
-        </Card>
+                </p>
+            </ShowCard>
+        </div>
     );
+
 }

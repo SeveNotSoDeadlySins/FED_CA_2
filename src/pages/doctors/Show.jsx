@@ -2,22 +2,22 @@ import { useEffect, useState } from "react";
 import axios from "@/config/api";
 import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
-
+import ShowCard from "@/components/showcard";
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+  IconStethoscope,
+  IconCalendarClock,
+  IconNotes,
+  IconTheater,
+} from "@tabler/icons-react";
+
+import { formatDateDMY } from "@/components/DateFormat";
+
 
 export default function Show() {
   const [doctor, setDoctor] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
+  const [patients, setPatients] = useState([]);
 
 
   const { id } = useParams();
@@ -82,146 +82,153 @@ export default function Show() {
     }
   };
 
+  const fetchPatients = async () => {
+    try {
+      const options = {
+        method: "GET",
+        url: `https://ca2-med-api.vercel.app/patients`,
+        headers: { Authorization: `Bearer ${token}` },
+      };
+      const response = await axios.request(options);
+
+      const patientsMap = {};
+      response.data.forEach(patient => {
+        patientsMap[patient.id] = patient;
+      });
+      setPatients(patientsMap);
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       await fetchDoctor();
       await fetchAppointments();
       await fetchPrescriptions();
+      await fetchPatients();
     };
     fetchData();
   }, []);
 
-  const deleteDoctor = async () => {
-    // User may try to run this function after a delete has happened, in which case we don't want to do anything
-    if (!doctor) {
-      return;
-    }
-
-    // Wrapping our API calls in a try/catch block means we can handle any errors that occur
-    try {
-      // In this first if block, we check if the doctor has any appointments or prescriptions
-      // If so, we need to delete them first
-      if (appointments.length > 0) {
-        // Map will return our array of promises, which we can await
-
-        // better than using forEach, because then we'd need to create an array beforehand and push to it
-        const deleteAppointmentJobs = appointments.map((appointment) => {
-          return axios.delete(
-            `https://ca2-med-api.vercel.app/appointments/${appointment.id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-        });
-
-        console.log(deleteAppointmentJobs);
-
-        // WAIT for all the promises to resolve before continuing
-        await Promise.all(deleteAppointmentJobs);
-      }
-
-      if (prescriptions.length > 0) {
-        // Once again, we iterate over the array of prescriptions, adding each delete request to an array
-        // We then wait for all of them to complete before continuing
-        const deletePrescriptionJobs = prescriptions.map((prescription) => {
-          return axios.delete(
-            `https://ca2-med-api.vercel.app/prescriptions/${prescription.id}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-        });
-
-        await Promise.all(deletePrescriptionJobs);
-      }
-
-      // With our appointments and prescriptions deleted, we can now delete the doctor
-      await axios.delete(`https://ca2-med-api.vercel.app/doctors/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });0
-
-      console.log("Doctor deleted");
-
-      // Clear out all our state values
-      setAppointments([]);
-      setPrescriptions([]);
-      setDoctor(null);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-
-
   if (!doctor) {
-    return <div>Loading...</div>;
+    return <div className="text-center py-20 text-gray-500">Loading...</div>;
   }
 
+
   return (
-    <>
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>{doctor.first_name} {doctor.last_name}</CardTitle>
-          <CardDescription>
-            {doctor.email}
-            <br />
-            {doctor.phone}
-            <br />
+    <div className="max-w-6xl mx-auto py-10 space-y-10 px-4">
 
+      {doctor && (
+        <ShowCard
+          icon={IconStethoscope}
+          iconBg="bg-orange-100"
+          iconColor="text-orange-600"
+          title={`${doctor.first_name} ${doctor.last_name}`}
+          hover={false}
+        >
+          <p className="text-gray-700 font-medium">
             {doctor.specialisation}
+          </p>
 
+          <p>
+            <span className="font-semibold">Email:</span> {doctor.email}
+          </p>
 
-          </CardDescription>
-        </CardHeader>
+          <p>
+            <span className="font-semibold">Phone:</span> {doctor.phone}
+          </p>
+        </ShowCard>
+      )}
 
-        <CardFooter className="flex-col gap-2">
-          <Button
-            variant="primary"
-            className="cursor-pointer text-red-500 hover:border-red-700 hover:text-red-700"
-            onClick={deleteDoctor}
-          >
-            Delete
-          </Button>
-        </CardFooter>
-      </Card>
+      {/* Appointments */}
+      <div>
+        <h2 className="text-2xl md:text-3xl font-bold mb-4 border-b pb-2">
+          Appointments
+        </h2>
 
-      <div className="mt-6">
-        <h2 className="text-xl font-bold mb-4">Appointments</h2>
         {appointments.length === 0 ? (
-          <p>No appointments found.</p>
+          <p className="text-gray-500 text-lg">No appointments found.</p>
         ) : (
-          <ul>
-            {appointments.map((appointment) => (
-              <li key={appointment.id}>
-                {/* convert unix timestamp to local date string */}
+          <div className="space-y-4">
+            {appointments.map((appointment) => {
+              const patient = patients[appointment.patient_id];
 
-                <span className="font-bold">Date: </span>{appointment.appointment_date} - <span className="font-bold">Patient: </span>{appointment.patient_id} <span className="text-gray-400">// should get the patient name here</span>
-              </li>
-            ))}
-          </ul>
+              return (
+                <ShowCard
+                  key={appointment.id}
+                  icon={IconCalendarClock}
+                  iconBg="bg-blue-100"
+                  iconColor="text-blue-600"
+                >
+                  <p>
+                    <span className="font-semibold">Date:</span>{" "}
+                    {formatDateDMY(appointment.appointment_date)}
+                  </p>
+
+                  <p className="flex items-center gap-2">
+                    <span className="font-semibold">Patient:</span>
+                    <IconTheater className="w-4 h-4 text-green-600" />
+                    {patient
+                      ? `${patient.first_name} ${patient.last_name}`
+                      : appointment.patient_id}
+                  </p>
+                </ShowCard>
+              );
+            })}
+          </div>
         )}
       </div>
 
-      <div className="mt-6">
-        <h2 className="text-xl font-bold mb-4">Prescriptions</h2>
+      {/* Prescriptions */}
+      <div>
+        <h2 className="text-2xl md:text-3xl font-bold mb-4 border-b pb-2">
+          Prescriptions
+        </h2>
+
         {prescriptions.length === 0 ? (
-          <p>No prescriptions found.</p>
+          <p className="text-gray-500 text-lg">No prescriptions found.</p>
         ) : (
-          <ul>
-            {prescriptions.map((prescription) => (
-              <li key={prescription.id}>
-                <span className="font-bold">Medication:</span> {prescription.medication} - <span className="font-bold">Dosage:</span> {prescription.dosage}
-              </li>
-            ))}
-          </ul>
+          <div className="space-y-4">
+            {prescriptions.map((prescription) => {
+              const patient = patients[prescription.patient_id];
+
+              return (
+                <ShowCard
+                  key={prescription.id}
+                  icon={IconNotes}
+                  iconBg="bg-yellow-100"
+                  iconColor="text-yellow-600"
+                >
+                  <p>
+                    <span className="font-semibold">Medication:</span>{" "}
+                    {prescription.medication}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold">Dosage:</span>{" "}
+                    {prescription.dosage}
+                  </p>
+
+                  <p className="flex items-center gap-2">
+                    <span className="font-semibold">Patient:</span>
+                    <IconTheater className="w-4 h-4 text-green-600" />
+                    {patient
+                      ? `${patient.first_name} ${patient.last_name}`
+                      : prescription.patient_id}
+                  </p>
+
+                  <p className="text-sm text-gray-500">
+                    {prescription.start_date} → {prescription.end_date}
+                  </p>
+                </ShowCard>
+              );
+            })}
+          </div>
         )}
       </div>
-    </>
+
+    </div>
   );
 }

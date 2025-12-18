@@ -2,16 +2,12 @@ import { useEffect, useState } from "react";
 import axios from "@/config/api";
 import { useParams } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { formatDateDMY } from "@/components/DateFormat";
+import ShowCard from "@/components/showcard";
 
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  IconNotes
+} from "@tabler/icons-react";
 
 export default function Show() {
   const [prescription, setDoctor] = useState([]);
@@ -43,24 +39,38 @@ export default function Show() {
     console.log("Hi");
   }, []);
 
-  return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>{prescription.diagnosis_id} {prescription.doctor_id}</CardTitle>
-        <CardDescription>
-          {prescription.dosage}
-          <br />
-          {prescription.end_date}
-                    <br />
-
+   return (
+    <div className="flex justify-center">
+      <ShowCard
+        icon={IconNotes}
+        iconBg="bg-yellow-100"
+        iconColor="text-yellow-600"
+        title="Prescription Details"
+      >
+        <p className="text-lg font-semibold">
           {prescription.medication}
+        </p>
+
+        <p>
+          <span className="font-semibold">Dosage:</span>{" "}
+          {prescription.dosage}
+        </p>
+
+        <p>
+          <span className="font-semibold">Patient ID:</span>{" "}
           {prescription.patient_id}
-          {prescription.start_date}
+        </p>
 
+        <p>
+          <span className="font-semibold">Doctor ID:</span>{" "}
+          {prescription.doctor_id}
+        </p>
 
-
-        </CardDescription>
-      </CardHeader>
-    </Card>
+        <p className="text-sm text-gray-500">
+          {formatDateDMY(prescription.start_date)} →{" "}
+          {formatDateDMY(prescription.end_date)}
+        </p>
+      </ShowCard>
+    </div>
   );
 }
